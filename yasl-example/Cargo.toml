@@ -1,0 +1,9 @@
+[package]
+name = "yasl-example"
+version = "0.1.0"
+authors = ["Poly <marynczak.bartlomiej@gmail.com>"]
+edition = "2018"
+
+
+[dependencies]
+yasl-macro={path="../yasl-macro"}

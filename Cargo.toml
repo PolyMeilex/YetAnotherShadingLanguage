@@ -1,0 +1,2 @@
+[workspace]
+members = ["yasl-macro", "yasl-example"]
