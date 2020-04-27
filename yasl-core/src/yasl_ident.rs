@@ -1,7 +1,6 @@
 use std::convert::{TryFrom, TryInto};
 
-use proc_macro::Span;
-use quote::quote;
+use proc_macro2::Span;
 use syn::spanned::Spanned;
 use syn::{Error, Ident, Result};
 use syn::{ExprPath, PatType, Path};
@@ -16,7 +15,7 @@ impl YaslIdent {
         self.to_string()
     }
     pub fn span(&self) -> Span {
-        self.0.span().unstable()
+        self.0.span()
     }
 }
 

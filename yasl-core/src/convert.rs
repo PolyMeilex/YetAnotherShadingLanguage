@@ -1,4 +1,4 @@
-use proc_macro::Span;
+use proc_macro2::Span;
 
 #[derive(Debug)]
 pub enum Glsl {

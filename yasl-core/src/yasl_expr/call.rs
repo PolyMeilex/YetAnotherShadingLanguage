@@ -1,6 +1,6 @@
 use std::convert::{TryFrom, TryInto};
 
-use proc_macro::Span;
+use proc_macro2::Span;
 use syn::{punctuated::Punctuated, spanned::Spanned, Error, Result};
 
 use syn::{Expr, ExprCall};

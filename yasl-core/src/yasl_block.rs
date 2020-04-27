@@ -1,4 +1,4 @@
-use crate::convert::{AsGlsl, Glsl, GlslFragment, GlslLine};
+use crate::convert::{AsGlsl, Glsl, GlslFragment};
 use std::convert::{TryFrom, TryInto};
 use syn::{Block, Error, Result};
 

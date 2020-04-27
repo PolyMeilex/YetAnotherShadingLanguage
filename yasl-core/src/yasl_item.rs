@@ -58,7 +58,7 @@ pub struct YaslItemStatic {
 impl AsGlsl for YaslItemStatic {
     fn as_glsl(&self) -> Glsl {
         Glsl::Line(GlslLine {
-            span: Some(self.ident.span().unstable()),
+            span: Some(self.ident.span()),
             ends_with_semi: true,
             glsl_string: format!(
                 "{} {} = {}",

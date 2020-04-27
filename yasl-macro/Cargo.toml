@@ -24,3 +24,7 @@ shaderc = {version="0.6.2", optional=true}
 glsl-to-spirv = {version="0.1.7", optional=true}
 
 
+proc-macro2 = "1.0"
+
+
+yasl-core={path="../yasl-core"}

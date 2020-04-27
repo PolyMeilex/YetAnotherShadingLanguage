@@ -26,7 +26,7 @@ impl AsGlsl for YaslItemFn {
         let mut elements = Vec::new();
 
         elements.push(Glsl::Line(GlslLine {
-            span: Some(self.ident.span().unstable()),
+            span: Some(self.ident.span()),
             ends_with_semi: false,
             glsl_string: format!(
                 "{} yasl_{}({}) {{",
@@ -41,7 +41,7 @@ impl AsGlsl for YaslItemFn {
         elements.push(block);
 
         elements.push(Glsl::Line(GlslLine {
-            span: Some(self.ident.span().unstable()),
+            span: Some(self.ident.span()),
             ends_with_semi: false,
             glsl_string: "}".into(),
         }));
