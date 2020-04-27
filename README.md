@@ -25,12 +25,12 @@ yasl_vert! {
         num2 = 1.0;
         num2 += 1.0;
 
-        let f1 : vec2<f32> = vec2(1.0,1.0);
-        let f2 : vec2<f64> = vec2(0.0,0.0);
 
-        // TODO: Vec Call Type Should Be Inplicit, instad of: ivec2(),uvec2() etc.
-        let i1 : vec2<i32> = ivec2(0,0);
-        let i2 : vec2<u32> = uvec2(0,0);
+        // TODO: Yasl should have its own vec type
+        let f1 : vec2<f32> = glsl::vec2(1.0,1.0);
+        let f2 : vec2<f64> = glsl::vec2(0.0,0.0);
+        let i1 : vec2<i32> = glsl::ivec2(0,0);
+        let i2 : vec2<u32> = glsl::uvec2(0,0);
 
     }
 }
