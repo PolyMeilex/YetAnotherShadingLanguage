@@ -1,2 +1,2 @@
 [workspace]
-members = ["yasl-core","yasl-macro", "yasl-example"]
+members = ["yasl-core","yasl-cli","yasl-macro", "yasl-example"]
