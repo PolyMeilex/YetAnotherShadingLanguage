@@ -1,24 +1,25 @@
 use std::convert::{TryFrom, TryInto};
-use syn::{spanned::Spanned, Error, FnArg, Ident, ItemFn, Result};
+use syn::{spanned::Spanned, Error, FnArg, ItemFn, Result};
 
-use crate::convert::{AsGlsl, Glsl, GlslFragment, GlslLine};
+use crate::glsl::{Glsl, GlslFragment, GlslLine};
 use crate::yasl_block::YaslBlock;
+use crate::yasl_ident::YaslIdent;
 use crate::yasl_type::YaslType;
 
 #[derive(Debug)]
 pub struct YaslItemFn {
-    ident: Ident,
-    args: Vec<(Ident, YaslType)>,
+    ident: YaslIdent,
+    args: Vec<(YaslIdent, YaslType)>,
     output: YaslType,
     block: Box<YaslBlock>,
 }
 
-impl AsGlsl for YaslItemFn {
-    fn as_glsl(&self) -> Glsl {
+impl From<&YaslItemFn> for Glsl {
+    fn from(item: &YaslItemFn) -> Glsl {
         let mut args = Vec::new();
 
-        for a in self.args.iter() {
-            args.push(format!("{} {}", a.1.as_glsl(), a.0.to_string()));
+        for a in item.args.iter() {
+            args.push(format!("{} {}", Glsl::from(&a.1), Glsl::from(&a.0)));
         }
 
         let args_glsl = args.join(",");
@@ -26,39 +27,28 @@ impl AsGlsl for YaslItemFn {
         let mut elements = Vec::new();
 
         elements.push(Glsl::Line(GlslLine {
-            span: Some(self.ident.span()),
+            span: Some(item.ident.span()),
             ends_with_semi: false,
             glsl_string: format!(
-                "{} yasl_{}({}) {{",
-                self.output.as_glsl().to_string(),
-                self.ident.to_string(),
+                "{} {}({}) {{",
+                Glsl::from(&item.output),
+                Glsl::from(&item.ident),
                 args_glsl
             ),
         }));
 
-        let block = self.block.as_glsl();
-
-        elements.push(block);
+        elements.push((&*item.block).into());
 
         elements.push(Glsl::Line(GlslLine {
-            span: Some(self.ident.span()),
+            span: Some(item.ident.span()),
             ends_with_semi: false,
             glsl_string: "}".into(),
         }));
-        // if Glsl::Fragment(f) = block{
 
-        // }
-
-        // format!(
-        //     "{} {}({}) {}",
-        //     self.output.as_glsl(),
-        //     self.ident.to_string(),
-        //     args_glsl,
-        //     self.block.as_glsl()
-        // )
         Glsl::Fragment(GlslFragment { elements })
     }
 }
+
 impl TryFrom<ItemFn> for YaslItemFn {
     type Error = Error;
     fn try_from(f: ItemFn) -> Result<Self> {
@@ -95,7 +85,7 @@ impl TryFrom<ItemFn> for YaslItemFn {
 
                 let ty = (*t.ty).try_into()?;
 
-                args.push((ident, ty));
+                args.push((ident.into(), ty));
             } else {
                 return Err(Error::new(i.span(), "Expected Type"));
             };
@@ -111,7 +101,7 @@ impl TryFrom<ItemFn> for YaslItemFn {
         let block = (*f.block).try_into()?;
 
         Ok(Self {
-            ident,
+            ident: ident.into(),
             args,
             output,
             block: Box::new(block),

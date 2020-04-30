@@ -1,5 +1,5 @@
 use super::YaslScalarType;
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 
 #[derive(Debug)]
 pub enum YaslVecType {
@@ -10,8 +10,8 @@ pub enum YaslVecType {
 
 impl YaslVecType {}
 
-impl AsGlsl for YaslVecType {
-    fn as_glsl(&self) -> Glsl {
+impl From<&YaslVecType> for Glsl {
+    fn from(ty: &YaslVecType) -> Glsl {
         use YaslVecType::*;
 
         fn get(s: &YaslScalarType) -> &'static str {
@@ -24,7 +24,7 @@ impl AsGlsl for YaslVecType {
             }
         }
 
-        Glsl::Expr(match self {
+        Glsl::Expr(match ty {
             Vec2(s) => format!("{}vec2", get(s)),
             Vec3(s) => format!("{}vec3", get(s)),
             Vec4(s) => format!("{}vec4", get(s)),

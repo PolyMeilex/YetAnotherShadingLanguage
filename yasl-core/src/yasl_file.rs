@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use syn::parse::ParseStream;
 use syn::Result;
 
-use crate::convert::{AsGlsl, Glsl, GlslFragment};
+use crate::glsl::{Glsl, GlslFragment};
 use crate::yasl_item::YaslItem;
 
 #[derive(Debug)]
@@ -13,12 +13,12 @@ pub struct YaslFile {
 
 impl YaslFile {}
 
-impl AsGlsl for YaslFile {
-    fn as_glsl(&self) -> Glsl {
+impl From<&YaslFile> for Glsl {
+    fn from(file: &YaslFile) -> Glsl {
         let mut elements = Vec::new();
 
-        for i in self.items.iter() {
-            elements.push(i.as_glsl());
+        for i in file.items.iter() {
+            elements.push(i.into());
         }
 
         Glsl::Fragment(GlslFragment { elements })

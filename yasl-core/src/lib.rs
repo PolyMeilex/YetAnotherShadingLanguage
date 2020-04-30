@@ -1,14 +1,13 @@
 use syn::parse::{Parse, ParseStream, Result};
 
-mod convert;
-use convert::{AsGlsl, Glsl, GlslLine};
+mod glsl;
+use glsl::{Glsl, GlslLine};
 
 mod yasl_block;
 mod yasl_expr;
 mod yasl_file;
 mod yasl_ident;
 mod yasl_item;
-mod yasl_local;
 mod yasl_stmt;
 mod yasl_type;
 
@@ -27,7 +26,7 @@ impl Parse for Shader {
 
         let file = YaslFile::parse(input)?;
 
-        let glsl = file.as_glsl();
+        let glsl: Glsl = (&file).into();
         let glsl = if let Glsl::Fragment(f) = glsl {
             f
         } else {

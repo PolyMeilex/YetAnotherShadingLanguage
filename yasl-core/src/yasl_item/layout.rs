@@ -1,10 +1,11 @@
 use std::convert::TryInto;
 use syn::parse::{Parse, ParseStream};
-use syn::{Error, Ident, Result, Type};
+use syn::{Error, Result, Type};
 use syn::{LitInt, Token};
 
-use crate::convert::{AsGlsl, Glsl, GlslLine};
+use crate::glsl::{Glsl, GlslLine};
 
+use crate::yasl_ident::YaslIdent;
 use crate::yasl_type::YaslType;
 
 #[derive(Debug)]
@@ -12,10 +13,11 @@ enum LayoutKind {
     Input,
     Output,
 }
-impl AsGlsl for LayoutKind {
-    fn as_glsl(&self) -> Glsl {
+
+impl From<&LayoutKind> for Glsl {
+    fn from(kind: &LayoutKind) -> Glsl {
         Glsl::Expr(
-            match self {
+            match kind {
                 LayoutKind::Input => "in",
                 LayoutKind::Output => "out",
             }
@@ -23,27 +25,28 @@ impl AsGlsl for LayoutKind {
         )
     }
 }
+
 #[derive(Debug)]
 pub struct YaslItemLayout {
     kind: LayoutKind,
     pos: usize,
-    ident: Ident,
+    ident: YaslIdent,
     ty: YaslType,
 }
 
 impl YaslItemLayout {}
 
-impl AsGlsl for YaslItemLayout {
-    fn as_glsl(&self) -> Glsl {
+impl From<&YaslItemLayout> for Glsl {
+    fn from(item: &YaslItemLayout) -> Glsl {
         Glsl::Line(GlslLine {
-            span: Some(self.ident.span()),
+            span: Some(item.ident.span()),
             ends_with_semi: true,
             glsl_string: format!(
                 "layout(location={}) {} {} {}",
-                self.pos.to_string(),
-                self.kind.as_glsl(),
-                self.ty.as_glsl(),
-                self.ident.to_string()
+                item.pos.to_string(),
+                Glsl::from(&item.kind),
+                Glsl::from(&item.ty),
+                Glsl::from(&item.ident),
             ),
         })
     }
@@ -73,7 +76,7 @@ impl Parse for YaslItemLayout {
         let pos = pos.base10_parse()?;
         let _ = ps.parse::<Token![>]>()?;
 
-        let ident: Ident = ps.parse()?;
+        let ident: syn::Ident = ps.parse()?;
 
         let _ = ps.parse::<Token![:]>()?;
 
@@ -84,7 +87,7 @@ impl Parse for YaslItemLayout {
         Ok(Self {
             kind,
             pos,
-            ident,
+            ident: ident.into(),
             ty: ty.try_into()?,
         })
     }

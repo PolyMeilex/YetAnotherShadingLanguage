@@ -4,7 +4,7 @@ use syn::{spanned::Spanned, Error, Result};
 
 use syn::Expr;
 
-use crate::convert::{AsGlsl, Glsl, GlslLine};
+use crate::glsl::{Glsl, GlslLine};
 use crate::yasl_ident::YaslIdent;
 
 mod binary;
@@ -35,20 +35,19 @@ pub enum YaslExprLineScope {
     Cast(YaslExprCast),
     Ident(YaslIdent),
 }
-impl AsGlsl for YaslExprLineScope {
-    fn as_glsl(&self) -> Glsl {
+impl From<&YaslExprLineScope> for Glsl {
+    fn from(expr: &YaslExprLineScope) -> Glsl {
         use YaslExprLineScope::*;
 
-        Glsl::Expr(match self {
-            Lit(l) => l.as_glsl().to_string(),
-            Binary(b) => b.as_glsl().to_string(),
-            Call(c) => c.as_glsl().to_string(),
-            Cast(c) => c.as_glsl().to_string(),
-            Ident(i) => i.as_glsl().to_string(),
+        Glsl::Expr(match expr {
+            Lit(l) => Glsl::from(l).to_string(),
+            Binary(b) => Glsl::from(b).to_string(),
+            Call(c) => Glsl::from(c).to_string(),
+            Cast(c) => Glsl::from(c).to_string(),
+            Ident(i) => Glsl::from(i).to_string(),
         })
     }
 }
-
 impl TryFrom<Expr> for YaslExprLineScope {
     type Error = Error;
     fn try_from(expr: Expr) -> Result<Self> {
@@ -59,20 +58,18 @@ impl TryFrom<Expr> for YaslExprLineScope {
             Expr::Call(c) => Ok(Call(c.try_into()?)),
             Expr::Cast(c) => Ok(Cast(c.try_into()?)),
             Expr::Path(p) => Ok(Ident(p.try_into()?)),
-            _ => {
-                println!("{:#?}", expr);
-                Err(Error::new(expr.span(), "Unsuported Action"))
-            }
+            _ => Err(Error::new(expr.span(), "Unsuported Action")),
         }
     }
 }
 
+/// Scope Used when returning in function
 #[derive(Debug)]
 pub struct YaslExprReturnScope(YaslExprLineScope);
 
-impl AsGlsl for YaslExprReturnScope {
-    fn as_glsl(&self) -> Glsl {
-        let line = self.0.as_glsl().to_string();
+impl From<&YaslExprReturnScope> for Glsl {
+    fn from(expr: &YaslExprReturnScope) -> Glsl {
+        let line = Glsl::from(&expr.0).to_string();
         let line = "return ".to_string() + &line;
         Glsl::Line(GlslLine {
             span: None,
@@ -81,6 +78,7 @@ impl AsGlsl for YaslExprReturnScope {
         })
     }
 }
+
 impl TryFrom<Expr> for YaslExprReturnScope {
     type Error = Error;
     fn try_from(expr: Expr) -> Result<Self> {
@@ -88,6 +86,7 @@ impl TryFrom<Expr> for YaslExprReturnScope {
     }
 }
 
+/// Scope Used Inside Of Functions
 #[derive(Debug)]
 pub enum YaslExprFunctionScope {
     Call(YaslExprCall),
@@ -95,14 +94,14 @@ pub enum YaslExprFunctionScope {
     AssignOp(YaslExprAssignOp),
 }
 
-impl AsGlsl for YaslExprFunctionScope {
-    fn as_glsl(&self) -> Glsl {
+impl From<&YaslExprFunctionScope> for Glsl {
+    fn from(expr: &YaslExprFunctionScope) -> Glsl {
         use YaslExprFunctionScope::*;
 
-        let (span, glsl) = match self {
-            Call(c) => (c.span(), c.as_glsl()),
-            Assign(a) => (a.span(), a.as_glsl()),
-            AssignOp(a) => (a.span(), a.as_glsl()),
+        let (span, glsl): (_, Glsl) = match expr {
+            Call(c) => (c.span(), c.into()),
+            Assign(a) => (a.span(), a.into()),
+            AssignOp(a) => (a.span(), a.into()),
         };
 
         Glsl::Line(GlslLine {
@@ -110,11 +109,6 @@ impl AsGlsl for YaslExprFunctionScope {
             ends_with_semi: true,
             glsl_string: glsl.to_string(),
         })
-        // match self {
-        //     Call(c) => c.as_glsl() + ";\n",
-        //     Assign(a) => a.as_glsl(),
-        //     AssignOp(a) => a.as_glsl(),
-        // }
     }
 }
 

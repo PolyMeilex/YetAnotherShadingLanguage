@@ -6,7 +6,7 @@ use syn::ExprBinary;
 
 use quote::quote;
 
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 
 use super::YaslExprLineScope;
 
@@ -17,12 +17,12 @@ pub struct YaslExprBinary {
     right: Box<YaslExprLineScope>,
 }
 
-impl AsGlsl for YaslExprBinary {
-    fn as_glsl(&self) -> Glsl {
-        let left = self.left.as_glsl();
-        let op = &self.op;
+impl From<&YaslExprBinary> for Glsl {
+    fn from(expr: &YaslExprBinary) -> Glsl {
+        let left: Glsl = (&*expr.left).into();
+        let op = &expr.op;
         let op = quote!(#op).to_string();
-        let right = self.right.as_glsl();
+        let right: Glsl = (&*expr.right).into();
 
         Glsl::Expr(format!("{} {} {}", left, op, right))
     }

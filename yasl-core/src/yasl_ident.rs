@@ -1,3 +1,4 @@
+use crate::glsl::Glsl;
 use std::convert::{TryFrom, TryInto};
 
 use proc_macro2::Span;
@@ -6,22 +7,30 @@ use syn::{Error, Ident, Result};
 use syn::{ExprPath, PatType, Path};
 
 #[derive(Debug)]
-pub struct YaslIdent(Ident);
+pub struct YaslIdent {
+    prefix: String,
+    ident: Ident,
+}
 impl YaslIdent {
-    pub fn to_string(&self) -> String {
-        self.0.to_string()
-    }
-    pub fn as_glsl(&self) -> String {
-        self.to_string()
+    fn to_string(&self) -> String {
+        format!("{}{}", self.prefix, self.ident.to_string())
     }
     pub fn span(&self) -> Span {
-        self.0.span()
+        self.ident.span()
+    }
+}
+impl From<&YaslIdent> for Glsl {
+    fn from(ident: &YaslIdent) -> Glsl {
+        Glsl::Expr(ident.to_string())
     }
 }
 
 impl From<Ident> for YaslIdent {
-    fn from(i: Ident) -> Self {
-        Self(i)
+    fn from(ident: Ident) -> Self {
+        Self {
+            prefix: "yasl_".into(),
+            ident,
+        }
     }
 }
 
@@ -29,28 +38,33 @@ impl TryFrom<Path> for YaslIdent {
     type Error = Error;
     fn try_from(p: Path) -> Result<Self> {
         let i = if let Some(i) = p.get_ident() {
-            i.clone()
+            i.clone().into()
         } else {
-            if !p.segments.is_empty() {
-                let span = p.segments[0].ident.span();
-                let mut i = Vec::new();
-                for s in p.segments.into_iter() {
-                    i.push(s.ident.to_string())
+            if p.segments.len() == 2 {
+                let mut iter = p.segments.into_iter();
+
+                let prefix = iter.next().unwrap().ident;
+
+                if prefix.to_string() != "glsl" {
+                    return Err(Error::new(
+                        prefix.span(),
+                        "Only 'glsl' namespace is posible",
+                    ));
                 }
 
-                if i[0] != "glsl" {
-                    return Err(Error::new(span, "Only 'glsl' namespace is posible"));
+                let ident = iter.next().unwrap().ident;
+
+                Self {
+                    // GLSL Prefix means that we need to left prefix empty to call glsl buildins
+                    prefix: "".into(),
+                    ident,
                 }
-
-                let s = i.join("_");
-
-                Ident::new(&s, span)
             } else {
                 return Err(Error::new(p.span(), "Expected Ident"));
             }
         };
 
-        Ok(i.into())
+        Ok(i)
     }
 }
 

@@ -6,20 +6,20 @@ use syn::ExprLit;
 
 use quote::quote;
 
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 
 #[derive(Debug)]
 pub struct YaslExprLit {
     lit: Lit,
 }
 
-impl AsGlsl for YaslExprLit {
-    fn as_glsl(&self) -> Glsl {
-        let lit = &self.lit;
-
+impl From<&YaslExprLit> for Glsl {
+    fn from(expr: &YaslExprLit) -> Glsl {
+        let lit = &expr.lit;
         Glsl::Expr(quote!(#lit).to_string())
     }
 }
+
 impl TryFrom<ExprLit> for YaslExprLit {
     type Error = Error;
     fn try_from(l: ExprLit) -> Result<Self> {

@@ -1,10 +1,12 @@
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 use std::convert::{TryFrom, TryInto};
 use syn::{Error, Result, Stmt};
 
 use crate::yasl_expr::{YaslExprFunctionScope, YaslExprReturnScope};
 use crate::yasl_item::YaslItem;
-use crate::yasl_local::YaslLocal;
+
+mod local;
+use local::YaslLocal;
 
 #[derive(Debug)]
 pub enum YaslStmt {
@@ -14,20 +16,18 @@ pub enum YaslStmt {
     Local(YaslLocal),
 }
 
-impl AsGlsl for YaslStmt {
-    fn as_glsl(&self) -> Glsl {
-        let inner = match self {
-            Self::Item(i) => i.as_glsl(),
-            Self::Expr(e) => e.as_glsl(),
-            Self::ReturnExpr(e) => e.as_glsl(),
-            Self::Local(l) => l.as_glsl(),
+impl From<&YaslStmt> for Glsl {
+    fn from(item: &YaslStmt) -> Glsl {
+        use YaslStmt::*;
+        let inner = match item {
+            Item(i) => i.into(),
+            Expr(e) => e.into(),
+            ReturnExpr(e) => e.into(),
+            Local(l) => l.into(),
         };
         inner
-
-        // Glsl::Fragment(format!("\t{}", inner))
     }
 }
-
 impl TryFrom<Stmt> for YaslStmt {
     type Error = Error;
     fn try_from(stmt: Stmt) -> Result<Self> {

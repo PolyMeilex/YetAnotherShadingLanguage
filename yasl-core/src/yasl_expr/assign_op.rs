@@ -5,7 +5,7 @@ use syn::{spanned::Spanned, BinOp, Error, ExprAssignOp, Result};
 
 use quote::quote;
 
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 use crate::yasl_ident::YaslIdent;
 
 use super::YaslExprLineScope;
@@ -23,15 +23,15 @@ impl YaslExprAssignOp {
     }
 }
 
-impl AsGlsl for YaslExprAssignOp {
-    fn as_glsl(&self) -> Glsl {
-        let op = self.op;
+impl From<&YaslExprAssignOp> for Glsl {
+    fn from(expr: &YaslExprAssignOp) -> Glsl {
+        let op = expr.op;
         let op = quote!(#op).to_string();
         Glsl::Expr(format!(
             "{} {} {}",
-            self.left.as_glsl(),
+            Glsl::from(&expr.left),
             op,
-            self.right.as_glsl()
+            Glsl::from(&expr.right)
         ))
     }
 }

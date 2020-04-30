@@ -3,7 +3,7 @@ use std::convert::{TryFrom, TryInto};
 use proc_macro2::Span;
 use syn::{spanned::Spanned, Error, ExprAssign, Result};
 
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 use crate::yasl_ident::YaslIdent;
 
 use super::YaslExprLineScope;
@@ -19,12 +19,12 @@ impl YaslExprAssign {
     }
 }
 
-impl AsGlsl for YaslExprAssign {
-    fn as_glsl(&self) -> Glsl {
+impl From<&YaslExprAssign> for Glsl {
+    fn from(expr: &YaslExprAssign) -> Glsl {
         Glsl::Expr(format!(
             "{} = {}",
-            self.left.as_glsl(),
-            self.right.as_glsl()
+            Glsl::from(&expr.left),
+            Glsl::from(&expr.right),
         ))
     }
 }

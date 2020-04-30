@@ -24,6 +24,8 @@ yasl_vert! {
 
         let i1 : vec2<i32> = glsl::ivec2(0,0);
         let i2 : vec2<u32> = glsl::uvec2(0,0);
+
+        glsl::gl_Position = glsl::vec4(0.0,0.0,0.0,1.0);
     }
 }
 

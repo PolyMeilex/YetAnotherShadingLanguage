@@ -5,7 +5,7 @@ use syn::{punctuated::Punctuated, spanned::Spanned, Error, Result};
 
 use syn::{Expr, ExprCall};
 
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 use crate::yasl_ident::YaslIdent;
 
 use super::YaslExprLineScope;
@@ -21,22 +21,17 @@ impl YaslExprCall {
     }
 }
 
-impl AsGlsl for YaslExprCall {
-    fn as_glsl(&self) -> Glsl {
-        let ident = self.ident.to_string();
+impl From<&YaslExprCall> for Glsl {
+    fn from(expr: &YaslExprCall) -> Glsl {
+        let ident = Glsl::from(&expr.ident);
 
-        let mut args = Vec::new();
+        let mut args: Vec<String> = Vec::new();
 
-        for a in self.args.iter() {
-            args.push(a.as_glsl().to_string());
+        for a in expr.args.iter() {
+            args.push(Glsl::from(a).into());
         }
 
-        if ident.starts_with("glsl_") {
-            let ident = ident.split("glsl_").collect::<Vec<&str>>()[1];
-            Glsl::Expr(format!("{}({})", ident, args.join(",")))
-        } else {
-            Glsl::Expr(format!("yasl_{}({})", ident, args.join(",")))
-        }
+        Glsl::Expr(format!("{}({})", ident, args.join(",")))
     }
 }
 

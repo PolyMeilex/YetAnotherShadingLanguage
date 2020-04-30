@@ -4,7 +4,7 @@ use syn::{Error, Result};
 
 use syn::ExprCast;
 
-use crate::convert::{AsGlsl, Glsl};
+use crate::glsl::Glsl;
 use crate::yasl_type::YaslType;
 
 use super::YaslExprLineScope;
@@ -15,9 +15,13 @@ pub struct YaslExprCast {
     ty: Box<YaslType>,
 }
 
-impl AsGlsl for YaslExprCast {
-    fn as_glsl(&self) -> Glsl {
-        Glsl::Expr(format!("{}({})", self.ty.as_glsl(), self.expr.as_glsl()))
+impl From<&YaslExprCast> for Glsl {
+    fn from(expr: &YaslExprCast) -> Glsl {
+        Glsl::Expr(format!(
+            "{}({})",
+            Glsl::from(&*expr.ty),
+            Glsl::from(&*expr.expr)
+        ))
     }
 }
 
