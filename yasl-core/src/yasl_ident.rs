@@ -27,8 +27,13 @@ impl From<&YaslIdent> for Glsl {
 
 impl From<Ident> for YaslIdent {
     fn from(ident: Ident) -> Self {
+        // TODO MOVE TIHS TO KEYWORDS MODULE
+        let prefix = match ident.to_string().as_str(){
+            "vec2" | "vec3" | "vec4" => "",
+            _ => "yasl_"
+        }.into();
         Self {
-            prefix: "yasl_".into(),
+            prefix,
             ident,
         }
     }
@@ -43,20 +48,25 @@ impl TryFrom<Path> for YaslIdent {
             if p.segments.len() == 2 {
                 let mut iter = p.segments.into_iter();
 
-                let prefix = iter.next().unwrap().ident;
+                let prefix = iter.next().unwrap().ident.to_string();
 
-                if prefix.to_string() != "glsl" {
-                    return Err(Error::new(
+                let prefix = match prefix.as_str(){
+                    "glsl" => "",
+                    "f32" => "",
+                    "f64" => "d",
+                    "bool" => "b",
+                    "i32" => "i",
+                    "u32" => "u",
+                    _ => return Err(Error::new(
                         prefix.span(),
-                        "Only 'glsl' namespace is posible",
-                    ));
-                }
+                        "Only 'glsl,f32,f64,bool,i32,u32' prefix is allowed",
+                    ))
+                }.into();
 
                 let ident = iter.next().unwrap().ident;
 
                 Self {
-                    // GLSL Prefix means that we need to left prefix empty to call glsl buildins
-                    prefix: "".into(),
+                    prefix,
                     ident,
                 }
             } else {
