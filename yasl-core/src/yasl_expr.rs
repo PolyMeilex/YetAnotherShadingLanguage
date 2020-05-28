@@ -31,6 +31,9 @@ use expr_if::YaslExprIf;
 mod expr_return;
 use expr_return::YaslExprReturn;
 
+mod unary;
+use unary::YaslExprUnary;
+
 use crate::yasl_block::YaslBlock;
 
 /// Scope used in var init
@@ -42,6 +45,7 @@ pub enum YaslExprLineScope {
     Call(YaslExprCall),
     Cast(YaslExprCast),
     Ident(YaslIdent),
+    Unary(YaslExprUnary),
 }
 impl From<&YaslExprLineScope> for Glsl {
     fn from(expr: &YaslExprLineScope) -> Glsl {
@@ -53,6 +57,7 @@ impl From<&YaslExprLineScope> for Glsl {
             Call(c) => Glsl::from(c).to_string(),
             Cast(c) => Glsl::from(c).to_string(),
             Ident(i) => Glsl::from(i).to_string(),
+            Unary(u) => Glsl::from(u).to_string(),
         })
     }
 }
@@ -66,6 +71,7 @@ impl TryFrom<Expr> for YaslExprLineScope {
             Expr::Call(c) => Ok(Call(c.try_into()?)),
             Expr::Cast(c) => Ok(Cast(c.try_into()?)),
             Expr::Path(p) => Ok(Ident(p.try_into()?)),
+            Expr::Unary(u) => Ok(Unary(u.try_into()?)),
             _ => Err(Error::new(
                 expr.span(),
                 format!("Unsuported Action (Function Scope);\n {:#?}", expr),

@@ -13,6 +13,9 @@ yasl_vert! {
         let a: f32 = add(1.0,1.0);
         let num: i32 = 1.0 as i32;
 
+        {
+            let num3: f32 = 0.0;
+        }
 
         let num2: f32 = a;
 
@@ -22,7 +25,7 @@ yasl_vert! {
             num2 += 1.0;
         } else if true{
             num2 = -1.0;
-        } else{ 
+        } else{
             num2 = 0.0;
         }
 

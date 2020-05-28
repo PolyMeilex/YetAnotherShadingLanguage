@@ -1,10 +1,11 @@
 use std::convert::{TryFrom, TryInto};
 
 use proc_macro2::Span;
-use syn::{spanned::Spanned, Error, ExprAssign, Result};
+use syn::{spanned::Spanned, Error, ExprUnary, Result};
+
+use quote::quote;
 
 use crate::glsl::Glsl;
-use crate::yasl_ident::YaslIdent;
 
 use super::YaslExprLineScope;
 
@@ -13,27 +14,27 @@ pub struct YaslExprUnary {
     op: syn::UnOp,
     expr: Box<YaslExprLineScope>,
 }
-impl YaslExprAssign {
+impl YaslExprUnary {
     pub fn span(&self) -> Span {
-        self.left.span()
+        self.op.span()
     }
 }
 
-impl From<&YaslExprAssign> for Glsl {
-    fn from(expr: &YaslExprAssign) -> Glsl {
-        Glsl::Expr(format!(
-            "{} = {}",
-            Glsl::from(&expr.left),
-            Glsl::from(&expr.right),
-        ))
+impl From<&YaslExprUnary> for Glsl {
+    fn from(expr: &YaslExprUnary) -> Glsl {
+        let op = expr.op;
+        let op = quote!(#op).to_string();
+
+        Glsl::Expr(format!("{}{}", op, Glsl::from(&*expr.expr)))
     }
 }
 
 impl TryFrom<ExprUnary> for YaslExprUnary {
     type Error = Error;
     fn try_from(u: ExprUnary) -> Result<Self> {
-        let op = 
+        let op = u.op;
+        let expr = Box::new((*u.expr).try_into()?);
 
-        Ok(Self { left, right })
+        Ok(Self { op, expr })
     }
 }
