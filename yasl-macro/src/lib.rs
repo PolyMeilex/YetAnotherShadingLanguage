@@ -25,7 +25,7 @@ impl Parse for Compiler {
         };
 
         #[cfg(feature = "use-glsl-to-spirv")]
-        let sprv = glsl_to_spirv::compile(&shader.glsl, glsl_to_spirv::ShaderType::Vertex);
+        let mut sprv = glsl_to_spirv::compile(&shader.glsl, glsl_to_spirv::ShaderType::Vertex);
 
         match sprv {
             Err(e) => {
@@ -72,25 +72,23 @@ impl Parse for Compiler {
                 //     }
                 // }
             }
+            #[cfg(feature = "use-shaderc")]
             Ok(sprv) => {
-                #[cfg(feature = "use-shaderc")]
-                {
                     Ok(Self {
                         sprv: sprv.as_binary_u8().to_vec(),
                     })
-                }
-
-                #[cfg(feature = "use-glsl-to-spirv")]
-                {
+            }
+            #[cfg(feature = "use-glsl-to-spirv")]
+            Ok(mut sprv) => {
                     use std::io::prelude::*;
 
                     let mut buffer = Vec::new();
                     sprv.read_to_end(&mut buffer).unwrap();
 
                     Ok(Self { sprv: buffer })
-                }
             }
         }
+
     }
 }
 

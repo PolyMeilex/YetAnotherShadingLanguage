@@ -25,8 +25,10 @@ impl Parse for Shader {
         out += version;
 
         let file = YaslFile::parse(input)?;
+        println!("{:#?}", file);
 
         let glsl: Glsl = (&file).into();
+        // println!("{:#?}", glsl);
         let glsl = if let Glsl::Fragment(f) = glsl {
             f
         } else {

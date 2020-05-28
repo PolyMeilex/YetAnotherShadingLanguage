@@ -6,7 +6,7 @@ yasl_vert! {
     layout<input,0> pos: vec2<f32>;
 
     fn add(a: f32,b: f32) -> f32{
-        a + b
+        return a + b;
     }
 
     fn main() {
@@ -17,17 +17,24 @@ yasl_vert! {
         let num2: f32 = a;
 
         num2 = 1.0;
-        num2 += 1.0;
 
-        let f : vec2<f32> = vec2(1.0,1.0);
+        if num2 == 1.0 {
+            num2 += 1.0;
+        } else if true{
+            num2 = -1.0;
+        } else{ 
+            num2 = 0.0;
+        }
 
-        let f1 : vec2<f32> = f32::vec2(1.0,1.0);
-        let f2 : vec2<f64> = f64::vec2(0.0,0.0);
+        // let f : vec2<f32> = vec2(1.0,1.0);
 
-        let i1 : vec2<i32> = i32::vec2(0,0);
-        let i2 : vec2<u32> = u32::vec2(0,0);
+        // let f1 : vec2<f32> = f32::vec2(1.0,1.0);
+        // let f2 : vec2<f64> = f64::vec2(0.0,0.0);
 
-        glsl::gl_Position = vec4(0.0,0.0,0.0,1.0);
+        // let i1 : vec2<i32> = i32::vec2(0,0);
+        // let i2 : vec2<u32> = u32::vec2(0,0);
+
+        // glsl::gl_Position = vec4(0.0,0.0,0.0,1.0);
     }
 }
 

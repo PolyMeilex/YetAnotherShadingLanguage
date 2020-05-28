@@ -30,7 +30,7 @@ impl From<&YaslItemFn> for Glsl {
             span: Some(item.ident.span()),
             ends_with_semi: false,
             glsl_string: format!(
-                "{} {}({}) {{",
+                "{} {}({})",
                 Glsl::from(&item.output),
                 Glsl::from(&item.ident),
                 args_glsl
@@ -39,11 +39,11 @@ impl From<&YaslItemFn> for Glsl {
 
         elements.push((&*item.block).into());
 
-        elements.push(Glsl::Line(GlslLine {
-            span: Some(item.ident.span()),
-            ends_with_semi: false,
-            glsl_string: "}".into(),
-        }));
+        // elements.push(Glsl::Line(GlslLine {
+        //     span: Some(item.ident.span()),
+        //     ends_with_semi: false,
+        //     glsl_string: "}".into(),
+        // }));
 
         Glsl::Fragment(GlslFragment { elements })
     }
