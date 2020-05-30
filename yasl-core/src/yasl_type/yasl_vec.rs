@@ -1,7 +1,7 @@
 use super::YaslScalarType;
 use crate::glsl::Glsl;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum YaslVecType {
     Vec2(YaslScalarType),
     Vec3(YaslScalarType),

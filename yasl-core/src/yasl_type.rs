@@ -5,12 +5,16 @@ use syn::{Error, Result};
 use crate::glsl::Glsl;
 
 mod yasl_scalar;
-use yasl_scalar::YaslScalarType;
+pub use yasl_scalar::YaslScalarType;
 
 mod yasl_vec;
-use yasl_vec::YaslVecType;
+pub use yasl_vec::YaslVecType;
 
-#[derive(Debug)]
+pub trait Typed {
+    fn get_type(&self) -> Option<YaslType>;
+}
+
+#[derive(Debug, Clone)]
 pub enum YaslType {
     ScalarType(YaslScalarType),
     Vec(YaslVecType),

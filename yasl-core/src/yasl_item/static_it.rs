@@ -14,6 +14,14 @@ pub struct YaslItemStatic {
     expr: YaslExprLineScope,
 }
 
+impl YaslItemStatic {
+    pub fn get_ident(&self) -> YaslIdent {
+        let mut ident = self.ident.clone();
+        ident.set_type(self.ty.clone());
+        ident
+    }
+}
+
 impl From<&YaslItemStatic> for Glsl {
     fn from(item: &YaslItemStatic) -> Glsl {
         Glsl::Line(GlslLine {

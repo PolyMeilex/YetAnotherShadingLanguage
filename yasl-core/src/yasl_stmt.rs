@@ -1,9 +1,12 @@
 use crate::glsl::Glsl;
-use std::convert::{TryFrom, TryInto};
+use std::{
+    collections::HashMap,
+    convert::{TryFrom, TryInto},
+};
 use syn::{Error, Result, Stmt};
 
 use crate::yasl_expr::YaslExprFunctionScope;
-use crate::yasl_item::YaslItem;
+use crate::{yasl_ident::YaslIdent, yasl_item::YaslItem, yasl_type::YaslType};
 
 mod local;
 use local::YaslLocal;
@@ -14,6 +17,15 @@ pub enum YaslStmt {
     Expr(YaslExprFunctionScope),
     // ReturnExpr(YaslExprReturnScope),
     Local(YaslLocal),
+}
+
+impl YaslStmt {
+    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+        match self {
+            YaslStmt::Local(l) => l.attempt_type_anotation(idents),
+            _ => {}
+        }
+    }
 }
 
 impl From<&YaslStmt> for Glsl {

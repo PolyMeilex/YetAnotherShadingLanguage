@@ -1,7 +1,14 @@
-use std::convert::{TryFrom, TryInto};
+use std::{
+    collections::HashMap,
+    convert::{TryFrom, TryInto},
+};
 use syn::{spanned::Spanned, Error, Item, Result};
 
-use crate::glsl::Glsl;
+use crate::{
+    glsl::Glsl,
+    yasl_ident::YaslIdent,
+    yasl_type::{Typed, YaslType},
+};
 
 mod static_it;
 use static_it::YaslItemStatic;
@@ -19,7 +26,21 @@ pub enum YaslItem {
     Fn(YaslItemFn),
 }
 
-impl YaslItem {}
+impl YaslItem {
+    pub fn get_idents(&self) -> Vec<YaslIdent> {
+        match self {
+            YaslItem::Static(i) => vec![i.get_ident()],
+            YaslItem::Fn(f) => vec![f.get_ident()],
+            _ => Vec::new(),
+        }
+    }
+    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+        match self {
+            YaslItem::Fn(f) => f.attempt_type_anotation(idents),
+            _ => {}
+        }
+    }
+}
 
 impl From<&YaslItem> for Glsl {
     fn from(item: &YaslItem) -> Glsl {
@@ -27,6 +48,16 @@ impl From<&YaslItem> for Glsl {
             YaslItem::Static(s) => s.into(),
             YaslItem::Layout(l) => l.into(),
             YaslItem::Fn(f) => f.into(),
+        }
+    }
+}
+
+impl From<&mut YaslItem> for Glsl {
+    fn from(item: &mut YaslItem) -> Glsl {
+        match item {
+            YaslItem::Static(ref s) => s.into(),
+            YaslItem::Layout(ref l) => l.into(),
+            YaslItem::Fn(ref f) => f.into(),
         }
     }
 }

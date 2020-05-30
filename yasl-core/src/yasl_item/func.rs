@@ -1,10 +1,13 @@
-use std::convert::{TryFrom, TryInto};
+use std::{
+    collections::HashMap,
+    convert::{TryFrom, TryInto},
+};
 use syn::{spanned::Spanned, Error, FnArg, ItemFn, Result};
 
 use crate::glsl::{Glsl, GlslFragment, GlslLine};
 use crate::yasl_block::YaslBlock;
 use crate::yasl_ident::YaslIdent;
-use crate::yasl_type::YaslType;
+use crate::yasl_type::{Typed, YaslType};
 
 #[derive(Debug)]
 pub struct YaslItemFn {
@@ -12,6 +15,23 @@ pub struct YaslItemFn {
     args: Vec<(YaslIdent, YaslType)>,
     output: YaslType,
     block: Box<YaslBlock>,
+}
+
+impl YaslItemFn {
+    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+        self.block.attempt_type_anotation(idents);
+    }
+    pub fn get_ident(&self) -> YaslIdent {
+        let mut ident = self.ident.clone();
+        ident.set_type(self.output.clone());
+        ident
+    }
+}
+
+impl Typed for YaslItemFn {
+    fn get_type(&self) -> Option<YaslType> {
+        Some(self.output.clone())
+    }
 }
 
 impl From<&YaslItemFn> for Glsl {

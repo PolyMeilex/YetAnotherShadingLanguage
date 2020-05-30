@@ -1,4 +1,7 @@
-use std::convert::{TryFrom, TryInto};
+use std::{
+    collections::HashMap,
+    convert::{TryFrom, TryInto},
+};
 
 use syn::{spanned::Spanned, Error, Result};
 
@@ -34,8 +37,13 @@ use expr_return::YaslExprReturn;
 mod unary;
 use unary::YaslExprUnary;
 
-use crate::yasl_block::YaslBlock;
+mod field;
+use field::YaslExprField;
 
+use crate::{
+    yasl_block::YaslBlock,
+    yasl_type::{Typed, YaslType},
+};
 /// Scope used in var init
 /// For example `let a = 5 + call();`
 #[derive(Debug)]
@@ -46,7 +54,42 @@ pub enum YaslExprLineScope {
     Cast(YaslExprCast),
     Ident(YaslIdent),
     Unary(YaslExprUnary),
+    Field(YaslExprField),
 }
+
+impl YaslExprLineScope {
+    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+        use YaslExprLineScope::*;
+        match self {
+            Ident(i) => {
+                if let Some(ty) = idents.get(&i.to_string()) {
+                    i.set_type(ty.clone());
+                }
+            }
+            Call(c) => {
+                let c = c.get_mut_ident();
+                if let Some(ty) = idents.get(&c.to_string()) {
+                    c.set_type(ty.clone());
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+impl Typed for YaslExprLineScope {
+    fn get_type(&self) -> Option<YaslType> {
+        use YaslExprLineScope::*;
+        match self {
+            Lit(l) => l.get_type(),
+            Binary(b) => b.get_type(),
+            Ident(i) => i.get_type(),
+            Call(c) => c.get_type(),
+            _ => None,
+        }
+    }
+}
+
 impl From<&YaslExprLineScope> for Glsl {
     fn from(expr: &YaslExprLineScope) -> Glsl {
         use YaslExprLineScope::*;
@@ -58,6 +101,7 @@ impl From<&YaslExprLineScope> for Glsl {
             Cast(c) => Glsl::from(c).to_string(),
             Ident(i) => Glsl::from(i).to_string(),
             Unary(u) => Glsl::from(u).to_string(),
+            Field(f) => Glsl::from(f).to_string(),
         })
     }
 }
@@ -72,9 +116,10 @@ impl TryFrom<Expr> for YaslExprLineScope {
             Expr::Cast(c) => Ok(Cast(c.try_into()?)),
             Expr::Path(p) => Ok(Ident(p.try_into()?)),
             Expr::Unary(u) => Ok(Unary(u.try_into()?)),
+            Expr::Field(f) => Ok(Field(f.try_into()?)),
             _ => Err(Error::new(
                 expr.span(),
-                format!("Unsuported Action (Function Scope);\n {:#?}", expr),
+                format!("Unsuported Action (Line Scope);\n {:#?}", expr),
             )),
         }
     }

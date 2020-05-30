@@ -6,7 +6,10 @@ use syn::ExprBinary;
 
 use quote::quote;
 
-use crate::glsl::Glsl;
+use crate::{
+    glsl::Glsl,
+    yasl_type::{Typed, YaslType},
+};
 
 use super::YaslExprLineScope;
 
@@ -15,6 +18,12 @@ pub struct YaslExprBinary {
     left: Box<YaslExprLineScope>,
     op: BinOp,
     right: Box<YaslExprLineScope>,
+}
+
+impl Typed for YaslExprBinary {
+    fn get_type(&self) -> Option<YaslType> {
+        self.left.get_type()
+    }
 }
 
 impl From<&YaslExprBinary> for Glsl {

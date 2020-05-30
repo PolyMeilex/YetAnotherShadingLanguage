@@ -1,10 +1,10 @@
-use std::convert::TryInto;
+use std::{collections::HashMap, convert::TryInto};
 
 use syn::parse::ParseStream;
 use syn::Result;
 
 use crate::glsl::{Glsl, GlslFragment};
-use crate::yasl_item::YaslItem;
+use crate::{yasl_ident::YaslIdent, yasl_item::YaslItem, yasl_type::{Typed, YaslType}};
 
 #[derive(Debug)]
 pub struct YaslFile {
@@ -13,13 +13,21 @@ pub struct YaslFile {
 
 impl YaslFile {}
 
-impl From<&YaslFile> for Glsl {
-    fn from(file: &YaslFile) -> Glsl {
+impl From<YaslFile> for Glsl {
+    fn from(mut file: YaslFile) -> Glsl {
         let mut elements = Vec::new();
 
-        for i in file.items.iter() {
+        let mut idents: HashMap<String, YaslType> = HashMap::new();
+        for i in file.items.iter_mut() {
+            for ident in i.get_idents() {
+                idents.insert(ident.to_string(), ident.get_type().unwrap().clone());
+            }
+
+            i.attempt_type_anotation(&idents);
+
             elements.push(i.into());
         }
+        println!("Idents: \n {:#?} \n", idents);
 
         Glsl::Fragment(GlslFragment { elements })
     }

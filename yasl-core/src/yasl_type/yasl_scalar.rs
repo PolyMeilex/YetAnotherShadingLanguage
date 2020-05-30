@@ -3,7 +3,7 @@ use std::convert::{TryFrom, TryInto};
 use syn::spanned::Spanned;
 use syn::{Error, Result};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum YaslScalarType {
     Int,
     UInt,

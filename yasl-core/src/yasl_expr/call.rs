@@ -6,7 +6,10 @@ use syn::{punctuated::Punctuated, spanned::Spanned, Error, Result};
 use syn::{Expr, ExprCall};
 
 use crate::glsl::Glsl;
-use crate::yasl_ident::YaslIdent;
+use crate::{
+    yasl_ident::YaslIdent,
+    yasl_type::{Typed, YaslType},
+};
 
 use super::YaslExprLineScope;
 
@@ -18,6 +21,15 @@ pub struct YaslExprCall {
 impl YaslExprCall {
     pub fn span(&self) -> Span {
         self.ident.span()
+    }
+    pub fn get_mut_ident(&mut self) -> &mut YaslIdent {
+        &mut self.ident
+    }
+}
+
+impl Typed for YaslExprCall {
+    fn get_type(&self) -> Option<YaslType> {
+        self.ident.get_type()
     }
 }
 

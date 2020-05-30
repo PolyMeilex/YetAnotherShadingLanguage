@@ -1,15 +1,24 @@
 use crate::glsl::{Glsl, GlslFragment, GlslLine};
-use std::convert::{TryFrom, TryInto};
+use std::{
+    collections::HashMap,
+    convert::{TryFrom, TryInto},
+};
 use syn::{spanned::Spanned, Block, Error, ExprBlock, Result};
 
-use crate::yasl_stmt::YaslStmt;
+use crate::{yasl_ident::YaslIdent, yasl_stmt::YaslStmt, yasl_type::YaslType};
 
 #[derive(Debug)]
 pub struct YaslBlock {
     brace_token: syn::token::Brace,
     stmts: Vec<YaslStmt>,
 }
-
+impl YaslBlock {
+    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+        for stmt in self.stmts.iter_mut() {
+            stmt.attempt_type_anotation(idents);
+        }
+    }
+}
 impl From<&YaslBlock> for Glsl {
     fn from(block: &YaslBlock) -> Glsl {
         let mut elements = Vec::new();

@@ -7,10 +7,8 @@ use yasl_core::Shader;
 struct Compiler {
     sprv: Vec<u8>,
 }
-impl Parse for Compiler {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let shader: Shader = input.parse()?;
-
+impl Compiler {
+    fn compile(shader: Shader) -> Result<Self> {
         #[cfg(feature = "use-shaderc")]
         let sprv = {
             let mut compiler = shaderc::Compiler::new().unwrap();
@@ -73,31 +71,55 @@ impl Parse for Compiler {
                 // }
             }
             #[cfg(feature = "use-shaderc")]
-            Ok(sprv) => {
-                    Ok(Self {
-                        sprv: sprv.as_binary_u8().to_vec(),
-                    })
-            }
+            Ok(sprv) => Ok(Self {
+                sprv: sprv.as_binary_u8().to_vec(),
+            }),
             #[cfg(feature = "use-glsl-to-spirv")]
             Ok(mut sprv) => {
-                    use std::io::prelude::*;
+                use std::io::prelude::*;
 
-                    let mut buffer = Vec::new();
-                    sprv.read_to_end(&mut buffer).unwrap();
+                let mut buffer = Vec::new();
+                sprv.read_to_end(&mut buffer).unwrap();
 
-                    Ok(Self { sprv: buffer })
+                Ok(Self { sprv: buffer })
             }
         }
+    }
+}
 
+struct ShaderMacro {
+    ident: syn::Ident,
+    // shader: Shader,
+    compiler: Compiler,
+}
+impl Parse for ShaderMacro {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let ident: syn::Ident = input.parse()?;
+        input.parse::<syn::Token!(!)>()?;
+        let body;
+
+        syn::braced!(body in input);
+
+        let shader: Shader = body.parse()?;
+
+        let compiler = Compiler::compile(shader)?;
+
+        Ok(Self { ident, compiler })
     }
 }
 
 use proc_macro::TokenStream;
-#[proc_macro]
-pub fn yasl_vert(input: TokenStream) -> TokenStream {
-    let shader = parse_macro_input!(input as Compiler);
 
-    format!("const a: [u8;{}] = {:?};", shader.sprv.len(), shader.sprv)
-        .parse()
-        .unwrap()
+#[proc_macro_attribute]
+pub fn yasl_vert(args: TokenStream, input: TokenStream) -> TokenStream {
+    let ShaderMacro { ident, compiler } = parse_macro_input!(input as ShaderMacro);
+
+    format!(
+        "const {}: [u8;{}] = {:?};",
+        ident.to_string(),
+        compiler.sprv.len(),
+        compiler.sprv
+    )
+    .parse()
+    .unwrap()
 }
