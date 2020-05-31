@@ -23,7 +23,20 @@ impl YaslStmt {
     pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
         match self {
             YaslStmt::Local(l) => l.attempt_type_anotation(idents),
+            YaslStmt::Expr(e) => e.attempt_type_anotation(idents),
             _ => {}
+        }
+    }
+    pub fn update_idents(&mut self) -> Vec<YaslIdent> {
+        match self {
+            YaslStmt::Local(l) => {
+                let mut out = Vec::new();
+                if let Some(i) = l.get_ident() {
+                    out.push(i);
+                }
+                out
+            }
+            _ => vec![],
         }
     }
 }

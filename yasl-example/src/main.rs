@@ -2,22 +2,32 @@ use yasl_macro::yasl_vert;
 
 #[yasl_vert]
 note_vert! {
-    layout<input,0> i_color: vec3<f32>;
-    layout<input,1> i_uv: vec2<f32>;
-    layout<input,2> i_size: vec2<f32>;
-    layout<input,3> i_radius: f32;
+    // layout<input,0> i_color: vec3<f32>;
+    // layout<input,1> i_uv: vec2<f32>;
+    // layout<input,2> i_size: vec2<f32>;
+    // layout<input,3> i_radius: f32;
 
     static c: f32 = 0.0;
 
-    fn add(a: f32, b: f32) -> f32{
-        return a + b;
-    }
+    // fn add(a: f32, b: f32) -> f32{
+    //     return a + b;
+    // }
 
     fn main() {
-        let b = c;
-        let d = add(1.0,2.0);
+        // let b = c + 1.0;
+        // let d = add(1.0,2.0);
 
+        let a = 1.0;
+        let b = a;
 
+        {
+            let b: u32 = 0;
+            let a = b;
+        }
+
+        // {
+            // let b = c;
+        // }
         // let color: vec3<f32> = i_color;
 
         // let alpha: f32 = 1.0;

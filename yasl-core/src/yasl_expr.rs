@@ -195,6 +195,17 @@ pub enum YaslExprFunctionScope {
     Block(YaslBlock),
 }
 
+impl YaslExprFunctionScope {
+    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+        use YaslExprFunctionScope::*;
+
+        match self {
+            Block(b) => b.attempt_type_anotation(idents),
+            _ => {}
+        }
+    }
+}
+
 impl From<&YaslExprFunctionScope> for Glsl {
     fn from(expr: &YaslExprFunctionScope) -> Glsl {
         use YaslExprFunctionScope::*;

@@ -19,6 +19,7 @@ pub struct YaslExprLit {
 impl Typed for YaslExprLit {
     fn get_type(&self) -> Option<YaslType> {
         use syn::Lit;
+        println!("{:#?}", self.lit);
         match self.lit {
             Lit::Float(_) => Some(YaslType::ScalarType(YaslScalarType::Float32)),
             Lit::Int(_) => Some(YaslType::ScalarType(YaslScalarType::Int)),

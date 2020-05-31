@@ -18,13 +18,13 @@ pub struct YaslItemFn {
 }
 
 impl YaslItemFn {
-    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
-        self.block.attempt_type_anotation(idents);
-    }
     pub fn get_ident(&self) -> YaslIdent {
         let mut ident = self.ident.clone();
         ident.set_type(self.output.clone());
         ident
+    }
+    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+        self.block.attempt_type_anotation(idents);
     }
 }
 

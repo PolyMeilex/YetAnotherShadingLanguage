@@ -5,7 +5,11 @@ use std::{
 };
 use syn::{spanned::Spanned, Block, Error, ExprBlock, Result};
 
-use crate::{yasl_ident::YaslIdent, yasl_stmt::YaslStmt, yasl_type::YaslType};
+use crate::{
+    yasl_ident::YaslIdent,
+    yasl_stmt::YaslStmt,
+    yasl_type::{Typed, YaslType},
+};
 
 #[derive(Debug)]
 pub struct YaslBlock {
@@ -13,9 +17,14 @@ pub struct YaslBlock {
     stmts: Vec<YaslStmt>,
 }
 impl YaslBlock {
-    pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
+    pub fn attempt_type_anotation(&mut self, global_idents: &HashMap<String, YaslType>) {
+        let mut idents = global_idents.clone();
+
         for stmt in self.stmts.iter_mut() {
-            stmt.attempt_type_anotation(idents);
+            for ident in stmt.update_idents() {
+                idents.insert(ident.to_string(), ident.get_type().unwrap().clone());
+            }
+            stmt.attempt_type_anotation(&idents);
         }
     }
 }
