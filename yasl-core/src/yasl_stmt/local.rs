@@ -14,24 +14,33 @@ use crate::yasl_type::{Typed, YaslType};
 #[derive(Debug)]
 pub struct YaslLocal {
     ident: YaslIdent,
-    ty: YaslType,
+    ty: Option<YaslType>,
     init: Option<YaslExprLineScope>,
 }
 
 impl YaslLocal {
     pub fn attempt_type_anotation(&mut self, idents: &HashMap<String, YaslType>) {
-        if let Some(init) = &mut self.init {
+        if let (Some(init), None) = (&mut self.init, &self.ty) {
             init.attempt_type_anotation(idents);
             if let Some(ty) = init.get_type() {
-                self.ty = ty;
+                self.ty = Some(ty);
             }
+        }
+    }
+    pub fn get_ident(&self) -> Option<YaslIdent> {
+        if let Some(ty) = &self.ty {
+            let mut ident = self.ident.clone();
+            ident.set_type(ty.clone());
+            Some(ident)
+        } else {
+            None
         }
     }
 }
 
 impl Typed for YaslLocal {
     fn get_type(&self) -> Option<YaslType> {
-        Some(self.ty.clone())
+        self.ty.clone()
     }
 }
 
@@ -43,12 +52,18 @@ impl From<&YaslLocal> for Glsl {
             String::new()
         };
 
+        let ty = if let Some(ty) = &local.ty {
+            ty
+        } else {
+            &YaslType::Void
+        };
+
         Glsl::Line(GlslLine {
             span: Some(local.ident.span()),
             ends_with_semi: true,
             glsl_string: format!(
                 "{} {} {}",
-                Glsl::from(&local.ty).to_string(),
+                Glsl::from(ty).to_string(),
                 Glsl::from(&local.ident),
                 init_glsl
             ),
@@ -68,19 +83,19 @@ impl TryFrom<Local> for YaslLocal {
 
         let pat_span = l.pat.span();
 
-        let p: Option<(YaslIdent, YaslType)> = match l.pat {
+        let p: Option<(YaslIdent, Option<YaslType>)> = match l.pat {
             Pat::Type(t) => {
                 let ident = t.clone().try_into()?;
                 let ty = (*t.ty).try_into()?;
 
-                Some((ident, ty))
+                Some((ident, Some(ty)))
             }
             Pat::Ident(i) => {
                 if let Some(init) = &init {
                     if let Some(t) = init.get_type() {
-                        Some((i.ident.into(), t))
+                        Some((i.ident.into(), Some(t)))
                     } else {
-                        Some((i.ident.into(), YaslType::Void))
+                        Some((i.ident.into(), None))
                     }
                 } else {
                     None

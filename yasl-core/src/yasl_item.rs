@@ -27,7 +27,7 @@ pub enum YaslItem {
 }
 
 impl YaslItem {
-    pub fn get_idents(&self) -> Vec<YaslIdent> {
+    pub fn update_idents(&mut self) -> Vec<YaslIdent> {
         match self {
             YaslItem::Static(i) => vec![i.get_ident()],
             YaslItem::Fn(f) => vec![f.get_ident()],
